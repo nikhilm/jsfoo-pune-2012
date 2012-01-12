@@ -1,0 +1,47 @@
+{"pageSetup": {
+    "width": "16cm",
+    "height": "12cm",
+    "margin-top": "0cm",
+    "margin-bottom": "0cm",
+    "margin-left": "0cm",
+    "margin-right": "0cm",
+    "margin-gutter": "0cm",
+    "spacing-header": "5mm",
+    "spacing-footer": "5mm",
+    "firstTemplate": "coverPage"
+},
+"pageTemplates" : {
+    "cutePage": {
+        "frames": [
+            ["5%", "5%", "90%", "90%"]
+        ],
+        "defaultHeader": "",
+        "defaultFooter": ""
+    },
+    "coverPage": {
+    	"frames": [
+    	    ["15%", "9%", "70%", "70%"]
+    	]
+    }
+},
+"styles": [
+    ["normal", {
+    	"fontSize": 10
+    }],
+    ["heading1", {
+    	"fontName": "Lobster",
+    	"textColor": "#008800"
+    }],
+    ["footer", {
+    	"fontSize": 8
+    }],
+    ["title", {
+    	"fontSize": 36
+    }],
+    ["subtitle", {
+    	"fontSize": 10,
+    	"alignment": TA_RIGHT,
+    	"textColor": "#0088ff"
+    }]
+]
+}
