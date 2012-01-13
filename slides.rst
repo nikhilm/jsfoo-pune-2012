@@ -27,14 +27,14 @@ We want to
 \
 
 
-:large:`Use C/C++ libraries in JavaScript`
+:large:`Use C/C++ libraries in node.js`
 \
 
 \
 
 \
 
-:large:`Exchange data between the two languages`
+:large:`Exchange data between C++ ⇔ JS`
 \
 
 \
