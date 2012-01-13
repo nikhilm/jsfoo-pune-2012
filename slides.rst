@@ -1,5 +1,5 @@
-My V8 is binding
-================
+My V8 is binding TODO
+=====================
 
 .. class:: subtitle
 
@@ -9,19 +9,90 @@ My V8 is binding
 
     PageBreak cutePage
 
-Second slide
+We want to
 ------------
 
-.. code-block:: javascript
+.. role:: large
 
-    var KNode = exports.KNode = function() {
-    }
+\
 
-Third slide
------------
+\
+
+\
+
+\
+
+\
+
+\
+
+
+:large:`Use C/C++ libraries in JavaScript`
+\
+
+\
+
+\
+
+:large:`Exchange data between the two languages`
+\
+
+\
+
+\
+
+:large:`Do asynchronous I/O`
+
+Getting started
+---------------
 
 .. code-block:: cpp
+    :include: firststep/firststep.cc
 
-    class XYZ : public ObjectWrap {
-    };
+Build
+-----
+
+.. code-block:: python
+    :include: firststep/wscript
+
+Run
+---
+
+.. code-block:: bash
+
+    $ node-waf configure build
+    ...
+    'build' finished successfully (0.327s)
+
+    $ node
+
+.. code-block:: js
+
+    > require('./build/Release/firststep')
+    {}
+
+Architecture
+------------
+
+.. [#] you **will** need http://bespin.cz/~ondras/html/index.html
+
+Handles
+-----------
+
+* Think of them as **smart pointers**, GCed by V8
+* Also encode scope (Use `HandleScope` to manage handles)
+* Local - GCed as they go out of scope::
+
+    Local<String> name; // also Handle<...>
+
+* Persistent - Must be manually disposed::
+
+    Persistent<String> globalVariable;
+
+Injecting primitives
+--------------------
+
+.. code-block:: cpp
+    :include: primitives/primitives.cc
+
 
