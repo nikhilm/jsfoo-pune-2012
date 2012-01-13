@@ -19,29 +19,40 @@
         "defaultFooter": ""
     },
     "coverPage": {
-    	"frames": [
-    	    ["15%", "9%", "70%", "70%"]
-    	]
+        "frames": [
+            ["15%", "9%", "70%", "70%"]
+        ]
     }
 },
 "styles": [
     ["normal", {
-    	"fontSize": 10
+        "fontSize": 16
     }],
     ["heading1", {
-    	"fontName": "Lobster",
-    	"textColor": "#008800"
+        "fontName": "Lobster",
+        "textColor": "#008800",
+        "fontSize": 20
     }],
     ["footer", {
-    	"fontSize": 8
+        "fontSize": 8
     }],
     ["title", {
-    	"fontSize": 36
+        "fontSize": 36
     }],
     ["subtitle", {
-    	"fontSize": 10,
-    	"alignment": TA_RIGHT,
-    	"textColor": "#0088ff"
+        "fontSize": 10,
+        "alignment": TA_RIGHT,
+        "textColor": "#0088ff"
+    }],
+    ["large", {
+        "fontSize": "200%",
+        "alignment": TA_CENTER
+    }],
+    ["code", {
+        "fontSize": 12
+    }],
+    ["endnote", {
+        "fontSize": 8
     }]
 ]
 }
