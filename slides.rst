@@ -133,6 +133,23 @@ Implementation:
     :start-after: {
     :end-before: }
 
+explain scope.Close
+
+Simple objects
+--------------
+
+.. code-block:: cpp
+    :include: simpleobject/main.cc
+    :start-at: Handle<Value>
+    :end-at: }
+
+.. code-block:: cpp
+    :include: simpleobject/main.cc
+    :start-at: static void
+    :end-at: }
+
+TODO fix indentation in inclusion
+
 ObjectWrap
 ----------
 
