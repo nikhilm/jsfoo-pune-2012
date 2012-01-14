@@ -96,3 +96,46 @@ Injecting primitives
     :include: primitives/primitives.cc
 
 
+Templates
+---------
+
+* Creation of functions and objects in C++
+
+.. note::
+
+    Explain how they differ, what each is for and
+    whats the deal with FunctionTemplate && FunctionTemplate::GetFunction
+
+Simple functions
+----------------
+
+Registering with V8:
+
+.. code-block:: cpp
+    :include: simplefunctions/main.cc
+    :start-at: Handle<Value>
+    :end-before: {
+
+.. code-block:: cpp
+    :include: simplefunctions/main.cc
+    :start-at: static void
+    :end-before: NODE_MODULE
+
+TODO TODO TODO
+
+Simple functions
+----------------
+
+Implementation:
+
+.. code-block:: cpp
+    :include: simplefunctions/main.cc
+    :start-after: {
+    :end-before: }
+
+ObjectWrap
+----------
+
+TODO diagram of how the nesting happens of native object and v8 object
+
+MakeCallback
