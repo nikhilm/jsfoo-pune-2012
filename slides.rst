@@ -84,6 +84,9 @@ Run
 Architecture
 ------------
 
+.. image:: images/architecture.png
+    :width: 12cm
+
 .. [#] you **will** need http://bespin.cz/~ondras/html/index.html
 
 Handles
