@@ -20,29 +20,38 @@
     },
     "coverPage": {
         "frames": [
-            ["15%", "9%", "70%", "70%"]
-        ]
+            ["24%", "15%", "70%", "70%"]
+        ],
+        "background": "images/cover.jpg"
     }
 },
 "styles": [
     ["normal", {
-        "fontSize": 16
+        "fontSize": 14,
+        "fontName": "Georgia"
     }],
     ["heading1", {
         "fontName": "Lobster",
         "textColor": "#008800",
-        "fontSize": 20
+        "fontSize": 20,
+        "spaceAfter": 20
     }],
     ["footer", {
         "fontSize": 8
     }],
     ["title", {
-        "fontSize": 36
+        "fontName": "Impact",
+        "fontSize": 46,
+        "textColor": "#fffa8e",
+        "alignment": TA_RIGHT,
+        "spaceAfter": 0
     }],
     ["subtitle", {
-        "fontSize": 10,
+        "fontSize": 12,
+        "fontName": "Gill Sans Bold",
         "alignment": TA_RIGHT,
-        "textColor": "#0088ff"
+        "textColor": "#ffface",
+        "spaceBefore": 0
     }],
     ["large", {
         "fontSize": "200%",

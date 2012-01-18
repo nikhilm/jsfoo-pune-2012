@@ -1,6 +1,5 @@
-My V8 is binding TODO
-=====================
-
+Build the C link
+================================
 .. class:: subtitle
 
     Nikhil Marathe
@@ -301,3 +300,15 @@ Things I haven't covered
 * Details of libuv
 * Using V8 on its own
 
+End notes
+-----------
+
+Contact:
+
+* `@nikhilcutshort <https://twitter.com/nikhilcutshort>`_
+* nsm.nikhil@gmail.com
+
+\
+\
+\
+`Cover image <http://www.flickr.com/photos/32045022@N05/3006326562/>`_ by `Munjal Savla <http://www.flickr.com/people/32045022@N05/>`_ (*by-nc-sa*)
