@@ -9,6 +9,16 @@ My V8 is binding TODO
 
     PageBreak cutePage
 
+Introduction
+------------
+
+* V8 is a powerful, **fast** JavaScript engine
+* It is self contained and easy to embed
+
+      JS is the new Lua?
+
+* node.js is a thin wrapper around V8 and evented I/O (*libuv*)
+
 We want to
 ------------
 
@@ -221,5 +231,40 @@ ObjectWrap
 ----------
 
 TODO diagram of how the nesting happens of native object and v8 object
+and explain internal fields
+TODO: args.Holder() vs args.This()
+args.Holder() refers to the object it should've been called on
+so that prototype chains work. Dig into NODE_SET_PROTOTYPE_METHOD
+and explain Signatures
 
-MakeCallback
+Going Async
+-----------
+
+Linking your library
+--------------------
+
+Linking external libs in Waf:
+
+.. code-block:: python
+
+    def configure(conf):
+      # ...
+      # uses pkg-config
+      conf.check_cfg(package='<pkg-config name>', args='--cflags --libs',
+      uselib_store='ALIAS')
+
+    def build(bld):
+      # ...
+      obj.uselib = 'ALIAS'
+
+Things I haven't covered
+------------------------
+
+* Accessors
+    * Per property accessors
+    * Indexed accessors ( `object[5]` )
+    * Named property accessors ( `object.property` )
+* Emitting events using new JS only EventEmitter
+* Details of libuv
+* Using V8 on its own
+
