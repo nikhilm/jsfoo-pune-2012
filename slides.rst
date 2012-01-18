@@ -109,6 +109,22 @@ Templates
 Simple functions
 ----------------
 
+\
+\
+\
+\
+.. code-block:: js
+
+    exports.square = function(n) {
+        return n * n;
+    }
+
+\
+We want to do this in C++
+
+Simple functions
+----------------
+
 Registering with V8:
 
 .. code-block:: cpp
@@ -120,8 +136,6 @@ Registering with V8:
     :include: simplefunctions/main.cc
     :start-at: static void
     :end-before: NODE_MODULE
-
-TODO TODO TODO
 
 Simple functions
 ----------------
