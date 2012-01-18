@@ -198,10 +198,24 @@ Simple objects
 
 .. code-block:: cpp
     :include: simpleobject/main.cc
-    :start-at: static void
-    :end-at: }
+    :start-at: static void Init
+    :end-before: NODE_MODULE
 
-TODO fix indentation in inclusion
+Methods
+-------
+
+.. code-block:: js
+
+    Inventory.prototype.addStock = function(newStock) {
+        this.items += newStock;
+    }
+
+    Inventory.prototype.ship = function(orders) {
+        if (this.items < orders)
+            throw Exception("Not enough items");
+
+        this.items -= orders
+    }
 
 ObjectWrap
 ----------
