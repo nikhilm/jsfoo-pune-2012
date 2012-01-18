@@ -144,10 +144,30 @@ Implementation:
 
 .. code-block:: cpp
     :include: simplefunctions/main.cc
-    :start-after: {
-    :end-before: }
+    :start-at: Handle
+    :end-at: }
 
 explain scope.Close
+
+Strings to-and-fro
+------------------
+
+v8::String -> C string
+
+.. code-block:: cpp
+    :include: strings/main.cc
+    :start-after: v8;
+    :end-before: Handle<Value> Read
+
+Strings to-and-fro
+------------------
+
+C string -> v8::String
+
+.. code-block:: cpp
+    :include: strings/main.cc
+    :start-at: Handle<Value> Read
+    :end-at: }
 
 Simple objects
 --------------
