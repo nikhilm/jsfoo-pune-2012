@@ -172,6 +172,25 @@ C string -> v8::String
 Simple objects
 --------------
 
+\
+\
+\
+
+.. code-block:: js
+
+    exports.Inventory = function() {
+        this.items = 257;
+    }
+
+    // later
+    var iv = new Inventory();
+    console.log(iv.items);
+
+This is the classic object oriented JS style
+
+Simple objects
+--------------
+
 .. code-block:: cpp
     :include: simpleobject/main.cc
     :start-at: Handle<Value>
