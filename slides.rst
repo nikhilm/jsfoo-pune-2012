@@ -227,6 +227,36 @@ Methods
         this.items -= orders
     }
 
+Methods
+-------
+
+Registering prototype methods
+
+.. code-block:: cpp
+    :include: methods/main.cc
+    :start-at: // operating
+    :end-at: GetFunction());
+
+Methods
+-------
+
+Accessing object properties
+
+.. code-block:: cpp
+    :include: methods/main.cc
+    :start-at: Handle<Value> AddStock
+    :end-at: }
+
+Methods
+-------
+
+Throwing an exception
+
+.. code-block:: cpp
+    :include: methods/main.cc
+    :start-at: Handle<Value> Ship
+    :end-at: }
+
 ObjectWrap
 ----------
 
