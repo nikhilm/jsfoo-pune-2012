@@ -6,11 +6,12 @@ Since I don't have much time, I'll jump right in. This talk is about writing
 bindings so that you can use native C/C++ libraries in node.js projects. This
 talk is useful if you want to do that, OR you are interested in some node.js/V8
 internals for curiosity's sake. I will assume you know C++ fairly well. The talk
-is very example heavy. That said I have intentionally not shown any actual
-binding. This is because wrapping your head around 2 things in 30min might be
-too much. Rather I show the V8/node side of the problem and at the end will
-point you to tiny bindings that serve as good examples. I suggest you clone the
-git repository and follow along in the code.
+is very example heavy. You'll have a lot of C++ thrown onto the screen. That
+said I have intentionally not shown any actual binding. This is because
+wrapping your head around 2 things in 30min might be too much. Rather I show
+the V8/node side of the problem and at the end will point you to tiny bindings
+that serve as good examples. I suggest you clone the git repository and follow
+along in the code.
 
 We want to
 ------------
@@ -170,158 +171,177 @@ The instance object is what becomes 'this' inside the function when the
 function is called as a constructor. Prototypal inheritance is also allowed
 using FunctionTemplate::Inherits, but I won't be going into that
 
-Calling JS functions
---------------------
+Simple objects
+--------------
 
-Just like you want native functions to be triggered from JS, you will want to
-call JS functions from native code, usually to invoke callbacks that someone
-has passed. To demonstrate this I'll be reimplementing the JavaScript apply
-function in C++ in a module called calljs.
-
-Calling JS functions
---------------------
-
-NOTE: I've ignored all type-checks for the sake of simplicity.
-
-We convert the first argument to a function. A function is called with the object that will be bound to it's 'this' and the number of parameters, followed by the parameters. The parameters should be a Handle<Value> array.
-
-.. code-block:: cpp
-    :include: calljs/main.cc
-    :start-at: Handle<Value>
-    :end-before: extern
+Since the same FunctionTemplate system is used to create objects, the code is
+not much different.  To implement this standard OO style in C++, you would
 
 Simple objects
 --------------
 
-\
-\
-\
-
-.. code-block:: js
-
-    exports.Inventory = function() {
-        this.items = 257;
-    }
-
-    // later
-    var iv = new Inventory();
-    console.log(iv.items);
-
-This is the classic object oriented JS style
-
-Simple objects
---------------
-
-.. code-block:: cpp
-    :include: simpleobject/main.cc
-    :start-at: static void Init
-    :end-before: NODE_MODULE
-
-.. code-block:: cpp
-    :include: simpleobject/main.cc
-    :start-at: Handle<Value>
-    :end-at: }
+Simply set the items property of the instance to the corresponding value.
+The inventory function callback will itself return args.This(). When invoked as
+a constructor, this will be an empty object instantiated by V8.
 
 Methods
 -------
 
-.. code-block:: js
-
-    Inventory.prototype.addStock = function(newStock) {
-        this.items += newStock;
-    }
-
-    Inventory.prototype.ship = function(orders) {
-        if (this.items < orders)
-            throw Exception("Not enough items");
-
-        this.items -= orders
-    }
+Methods are usually associated with the prototype, so what do you think the
+same will be in C++? That's right, use PrototypeTemplate() instead. There are
+one or two intricacies which I will explain later, which are abstracted away by
+the NODE_SET_PROTOTYPE_METHOD macro. The C++ function code for methods doesn't
+change compared to functions, except that you access and use properties from
+the This object.
 
 Methods
 -------
 
 Registering prototype methods
 
-.. code-block:: cpp
-    :include: methods/main.cc
-    :start-at: // operating
-    :end-at: GetFunction());
+Methods
+-------
+
+Object properties can be accessed by treating the This object as a simple
+dictionary and using Get/Set
 
 Methods
 -------
 
-Accessing object properties
-
-.. code-block:: cpp
-    :include: methods/main.cc
-    :start-at: Handle<Value> AddStock
-    :end-at: }
-
-Methods
--------
-
-Throwing an exception
-
-.. code-block:: cpp
-    :include: methods/main.cc
-    :start-at: Handle<Value> Ship
-    :end-at: }
+Throwing exceptions is very easy in V8, you just return a ThrowException call
+which will schedule an exception to be thrown
 
 ObjectWrap
 ----------
 
-* Associate native C++ objects with JS objects
-* Node specific class which manages GC
+Now that we've covered functions and methods, we are ready to start dealing
+with bindings where you have some internal objects. For example when parsing
+XML, every DOM document in JS should have a backing C++ DOM document.
+Associating these objects is made easier by a node class called ObjectWrap. It
+is a two level process. You create a ObjectWrap subclass, hold references to
+your binding related object in it. All the methods that the JS environment
+should be able to invoke on the object have corresponding C++ equivalents in
+this class. Then whenever a C++ function is called, it invokes the
+corresponding native method on the native object.
 
-TODO diagram of how the nesting happens of native object and v8 object
-and explain internal fields
+V8 Objects have special fields call internal fields which are not touched by V8
+itself, so you can store arbitrary data in them. ObjectWrap::Wrap allows you to
+associate your subclass with one of those objects.
+
+ObjectWrap
+----------
+
+Let's say this is your native library
+
+ObjectWrap
+----------
+
+To tell V8 you are using n internal fields, you've to say so.
+
+ObjectWrap
+----------
+
+In the constructor C++ equivalent function, you create a new Inventory
+instance. Here Inventory is the ObjectWrap subclass. You then call Wrap. Notice
+I've used args.Holder() rather than args.This(). I'll explain why in just a while.
+
+ObjectWrap
+----------
+
+Every 'method' then gets the reference to the wrapper by using Unwrap. Unwrap
+just retrieves the internal field. You could ditch ObjectWrap and just use
+internal fields directly, what ObjectWrap does is automates proper deletion of
+your object when the V8 object itself gets deleted.
 
 Going Async
 -----------
 
+Finally, we are at the reason people want to use node, because it moves I/O
+transparently to another thread and makes the JS code non-blocking. libuv has
+now abstracted away all the threading and libev code behind one function to
+make async calls very convenient. That said, coding async calls can still be
+cumbersome.
+
+Going Async
+-----------
+
+In the code, there is a folder 'sync' which does not use any async features. It
+has a similar script to the one shown here. If you run that you'll see the
+"After reshelve" is actually printed after 5 seconds.
+
+Going Async
+-----------
+
+The native blocking code simply sleeps for 5 seconds, although usually you'll
+do I/O in there.
+
+Going Async
+-----------
+
+The baton is used to exchange all data. It's first member should always be
+a uv_work_t structure. This is very essential. Then since we want to invoke the
+callback later, we pass it, and since we want a reference to the object since
+we want to invoke a method on it in the I/O thread.
+
+Going Async
+-----------
+
+This is the first function.
+
+Rather than returning or calling the callback, we create the Baton, populate it and call uv_queue_work. Notice how we made the function persistent since we are going to be passing it around.
+
+queue_work() takes the event loop, which is almost always the default loop, the
+request object, and the function which is to be run parallelly, and the one to
+be called after the blocking function returns.
+
+Going Async
+-----------
+
+Thread pool function
+
+The thread pool function should not interact with V8 or V8 objects at all. It
+is running in a separate thread, and fiddling will cause unpredictable results.
+Just extract the baton from the request object's data field and do your
+blocking work.
+
+Going Async
+-----------
+
+Clean up
+
+The After function calls the callback now that the blocking task has finished.
+Since we had made the callback persistent, it is also our job to dispose it off
+and delete the baton.
+
+Going Async
+-----------
+
+Running async/test.js should immediately show the difference between the synchronous and asynchronous versions.
+
+.. code-block:: txt
+
+    After reshelve in source
+    Tick
+    Tick
+    Tick
+    Tick
+    Reshelving done
+
 Linking your library
 --------------------
 
-Linking external libs in Waf:
-
-.. code-block:: python
-
-    def configure(conf):
-      # ...
-      # uses pkg-config
-      conf.check_cfg(package='<pkg-config name>', args='--cflags --libs',
-      uselib_store='ALIAS')
-
-    def build(bld):
-      # ...
-      obj.uselib = 'ALIAS'
+With that we are almost at the end. To actually link your library in the
+compile step, you'll want to tell Waf to do so. Waf uses pkg-config to find the
+location. Simply using the alias in the build stage should do it. It is possible to directly
+link static libraries into the node executable, but I don't know how to do it
+with the new build system, yet.
 
 Holder vs This
 --------------
 
+So the final remaining inconsistency.
 args.Holder() refers to the object it should've been called on
 so that prototype chains work.
-
-Strings to-and-fro
-------------------
-
-v8::String -> C string
-
-.. code-block:: cpp
-    :include: strings/main.cc
-    :start-after: v8;
-    :end-before: Handle<Value> Read
-
-Strings to-and-fro
-------------------
-
-C string -> v8::String
-
-.. code-block:: cpp
-    :include: strings/main.cc
-    :start-at: Handle<Value> Read
-    :end-at: }
 
 Things I haven't covered
 ------------------------
@@ -335,15 +355,24 @@ Things I haven't covered
 * Details of libuv
 * Using V8 on its own
 
+You might want to look at
+-------------------------
+
+these bindings are good references when writing your own.
+
 End notes
------------
+---------
 
-Contact:
+That's it. Thank you very much for listening to me, I hope it was enriching.
+Before you ask me questions, I have one question to ask, which is just a little
+survey I'm doing.
 
-* `@nikhilcutshort <https://twitter.com/nikhilcutshort>`_
-* nsm.nikhil@gmail.com
+What do you think is the one technology/cultural value/concept that you think
+*every* software developer, whether he be a assembly programmer or a web
+developer, should know?
 
-\
-\
-\
-`Cover image <http://www.flickr.com/photos/32045022@N05/3006326562/>`_ by `Munjal Savla <http://www.flickr.com/people/32045022@N05/>`_ (*by-nc-sa*)
+Please drop me replies at either of these places.
+
+The PDF has some more slides you may find useful.
+
+Questions, thanks etc.
