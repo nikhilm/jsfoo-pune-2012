@@ -316,6 +316,76 @@ Unwrapping
 Going Async
 -----------
 
+* The easiest way is to use `uv_queue_work()`
+* Every async call requires a set of 3 functions
+    1. Set up and invoke `uv_queue_work()`
+    2. Do blocking task (run in separate thread)
+    3. Clean up (run in main thread)
+* Use a 'baton' to pass around data
+    * `uv_request_t` is used by `libuv`
+    * But it's `data` field is important to store the baton itself
+* Slightly cumbersome :(
+
+Going Async
+-----------
+
+.. code-block:: js
+    :include: async/test.js
+
+Going Async
+-----------
+
+The native blocking code (method of class `Library::Inventory`)
+
+.. code-block:: cpp
+    :include: async/main.cc
+    :start-at: void reshelve
+    :end-at: }
+
+Going Async
+-----------
+
+JS callback
+
+.. code-block:: cpp
+    :include: async/main.cc
+    :start-at: static Handle<Value> Reshelve
+    :end-at: }
+
+Going Async
+-----------
+
+Thread pool function
+
+.. code-block:: cpp
+    :include: async/main.cc
+    :start-at: static void ReshelveAsync
+    :end-at: }
+
+Going Async
+-----------
+
+Clean up
+
+.. code-block:: cpp
+    :include: async/main.cc
+    :start-at: static void ReshelveAsyncAfter
+    :end-before: private
+
+Going Async
+-----------
+
+Output
+
+.. code-block:: txt
+
+    After reshelve in source
+    Tick
+    Tick
+    Tick
+    Tick
+    Reshelving done
+
 Linking your library
 --------------------
 
