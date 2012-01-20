@@ -113,9 +113,8 @@ public:
         ReshelveBaton *baton =
             static_cast<ReshelveBaton*>(req->data);
 
-        Handle<Value> argv[] = { Null() }; // no error
         baton->callback->Call(Context::GetCurrent()->Global(),
-                              1, argv);
+                              0, NULL);
 
         baton->callback.Dispose();
         delete baton;
