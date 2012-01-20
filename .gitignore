@@ -1,5 +1,4 @@
 .*.swp
 build
 *.node
-slides.pdf
 .lock-wscript
