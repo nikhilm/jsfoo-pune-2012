@@ -33,11 +33,6 @@ private:
 namespace binding {
 class Inventory : public ObjectWrap {
 public:
-    Inventory() : ObjectWrap()
-                , inv(new Library::Inventory()) {};
-
-    ~Inventory() { delete inv; }
-
     static Handle<Value> New(const Arguments &args) {
         Inventory *wrapper = new Inventory();
         wrapper->Wrap(args.Holder());
@@ -53,7 +48,9 @@ public:
     }
 
     static Handle<Value> Ship(const Arguments &args) {
+        // extract
         Inventory *wrapper = Unwrap<Inventory>(args.Holder());
+
         int orders = args[0]->Uint32Value();
         int result = wrapper->inv->ship(orders);
 
@@ -67,6 +64,11 @@ public:
         Inventory *wrapper = Unwrap<Inventory>(info.Holder());
         return Integer::New(wrapper->inv->getItems());
     }
+
+    Inventory() : ObjectWrap()
+                , inv(new Library::Inventory()) {};
+
+    ~Inventory() { delete inv; }
 
 private:
     Library::Inventory *inv;
