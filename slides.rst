@@ -344,6 +344,16 @@ The native blocking code (method of class `Library::Inventory`)
 Going Async
 -----------
 
+The baton
+
+.. code-block:: cpp
+    :include: async/main.cc
+    :start-at: struct ReshelveBaton
+    :end-at: }
+
+Going Async
+-----------
+
 JS callback
 
 .. code-block:: cpp
