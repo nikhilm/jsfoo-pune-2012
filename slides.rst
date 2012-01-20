@@ -18,9 +18,10 @@ Introduction
 
 * node.js is a thin wrapper around V8 and evented I/O (*libuv*)
 
-Code
-----
+Follow along
+------------
 
+Slides and code
 \
 \
 \
@@ -165,13 +166,13 @@ Templates
 
 .. code-block:: JS
 
-    FunctionTemplate                          ???
+    FunctionTemplate                            ???
 
-    FunctionTemplate::GetFunction             square [Function]
+    FunctionTemplate::GetFunction               square [Function]
 
-    FunctionTemplate::InstanceTemplate        What `this` would be in 'new square()'
+    FunctionTemplate::InstanceTemplate()        What `this` would be in 'new square()'
 
-    FunctionTemplate::PrototypeTemplate       square.prototype
+    FunctionTemplate::PrototypeTemplate()       square.prototype
 
 Simple objects
 --------------
@@ -300,8 +301,6 @@ Wrapping
     :include: objectwrap/main.cc
     :start-at: namespace binding
     :end-at: }
-
-TODO: put diagram
 
 ObjectWrap
 ----------
