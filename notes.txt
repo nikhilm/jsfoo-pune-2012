@@ -1,0 +1,349 @@
+Introduction
+------------
+
+Good morning everyone, and I hope all of you had fun in the first few sessions.
+Since I don't have much time, I'll jump right in. This talk is about writing
+bindings so that you can use native C/C++ libraries in node.js projects. This
+talk is useful if you want to do that, OR you are interested in some node.js/V8
+internals for curiosity's sake. I will assume you know C++ fairly well. The talk
+is very example heavy. That said I have intentionally not shown any actual
+binding. This is because wrapping your head around 2 things in 30min might be
+too much. Rather I show the V8/node side of the problem and at the end will
+point you to tiny bindings that serve as good examples. I suggest you clone the
+git repository and follow along in the code.
+
+We want to
+------------
+
+Some examples of requiring bindings are to do image processing using OpenCV, or
+OpenSSH for cryptography (in-built) or parsing XML using libxmljs.
+
+The V8 engine is very modular and built to easily allow these bindings. Most of
+these concepts also apply to Spidermonkey too.
+
+The biggest reason everyone is using node is that it makes asynchronous I/O
+easy. For any bindings with I/O you will want it to be async too, so I'm going
+to cover that.
+
+Getting started
+---------------
+
+So let's jump into the first piece of code. This is a outline of how any module
+looks like. You'll always want the v8 and node headers. The NODE_MODULE macro
+allows you to define the name of the module and specify the function called to
+initialize your module. This function receives a single JS object, the module
+scope, in which you can set up your library. Think of this `target` as the
+`exports` object used in JS modules.
+
+There should be one and only one initialization function for every node module.
+
+Build
+-----
+
+Node uses the WAF build tool to compile addons. When you install node, the
+node-waf tool is also installed which is aware of node specific information.
+Just like make has a Makefile, waf has a wscript file which is just Python code.
+
+The standard build for a node module is given here. This will create the
+dynamic library in build/Release
+
+You specify you want to use C++. The node_addon allows linking with v8 and node
+and includes their header files in the build process. obj.source can be
+multiple space separated filenames.
+
+Run
+---
+
+To compile use `node-waf configure` the first time, and then `node-waf` by
+itself for subsequent recompiles. At the end of the talk I'll show you how to
+actually link your external library into the code by modifying the wscript.
+
+If you now require() your module, you should see it is empty but imported
+successfully.
+
+.. code-block:: bash
+
+    $ node-waf configure build
+    ...
+    'build' finished successfully (0.327s)
+
+    $ node
+
+.. code-block:: js
+
+    > require('./build/Release/firststep')
+    {}
+
+Architecture
+------------
+
+Your node module acts as a conduit between V8 and your library. Indeed, node is
+only a tiny wrapper over V8 and most of the time you'll be touching only V8.
+The V8 API documentation is therefore a good thing to have open. One version
+can be found at that link.
+
+.. image:: images/architecture.png
+    :width: 12cm
+
+.. [#] you **will** need http://bespin.cz/~ondras/html/index.html
+
+Handles
+-----------
+
+So before we start interacting with V8, let's discuss Handles, since you will *always* use them and access all V8 related objects through them.
+
+Every V8 Javascript/process runs in a v8::Context, and memory is managed in
+that context by the v8 GC. Heap allocated objects are referenced by the Handle
+class, which acts as a smart pointer. Handles are stack-based and lightweight
+(so you can pass them around by value).
+
+When the GC finds an object with no handles to them in native code, and also no
+references to them from JS, it is free to delete the object. It is usually
+convenient to load a new HandleScope (something like a stack frame for Handles)
+in every function, so that all Handles are safely reclaimed in one-shot.
+
+Handles come in two varieties. A object referenced only by a Local handle is
+deleted when the handle goes out of scope. A Persistent handle on the other
+hand keep their memory around until manually disposed (of course, destroying
+the context in which the Handle was created, will take down all handles). In
+bindings, Persistent handles are usually used for classes and function
+templates and not much else. Sometimes if you want to pass around function
+callbacks between different C++ scopes, then you will use a Persistent
+reference to that JS function.
+
+Injecting primitives
+--------------------
+
+With all that behind us, we can finally start writing some real code. The simple thing you can do is introduce variables into the module from C++. This could be used to report the version of your C++ library, expose constants to JS and to populate data. Understand that target is a JS object, so you simply Set integer or string keys into it. Here I have introduced the value of PI into my module.
+
+For constants specified by macros, node provides a handle macro. All the
+standard JS types have their V8 analogues. One common pattern I would like to
+stress is the use of a static New method on all the V8 classes. This is the
+right way to create V8 objects so that the GC can track them. All of these New
+methods will always return a Local handle. To make them persistent, an explicit
+cast is required.
+
+> Play with the module in a REPL.
+
+Simple functions
+----------------
+
+Now primitives are useful, but to actually start executing code based on what
+happens in the JS environment, we need functions. In V8 every JS function can
+map to a native function. I'll show the code first and then we'll understand
+the concepts involved. For demonstration, let's convert the simple square
+function into C++.
+
+Simple functions
+----------------
+
+All functions mapped to JS have a signature returning a Value and accepting
+a v8::Arguments instance that has information about the function call. This
+information includes the arguments themselves, and references to the This
+object, the context of the call and something called the Holder.
+
+Once your template is set up, you can get a function object to be injected into
+JS via GetFunction. The square function is now available as exports.square.
+
+Simple functions
+----------------
+
+The actual implementation of functions is pretty easy. You'll extract and
+type-check the arguments, do your computations or pass on the arguments to your
+library, and then compute a value to give back to the JS environment.
+
+Here is where Scope comes into play. All the arguments extracted become part of
+the closest HandleScope. When the C++ function returns, this scope will be
+destroyed and all all Locals will be GCed. But you want to preserve the return
+value. The Close method will make the return value part of the next closest
+scope in the JS environment (usually the scope of the caller).
+
+Templates
+---------
+
+Function themselves are held as a FunctionTemplate. Since objects are also
+created from functions in JavaScript, the FunctionTemplate acts as an
+intermediate staging ground for you to set properties on them. It provides
+access to the prototype object and the instance object.
+
+The instance object is what becomes 'this' inside the function when the
+function is called as a constructor. Prototypal inheritance is also allowed
+using FunctionTemplate::Inherits, but I won't be going into that
+
+Calling JS functions
+--------------------
+
+Just like you want native functions to be triggered from JS, you will want to
+call JS functions from native code, usually to invoke callbacks that someone
+has passed. To demonstrate this I'll be reimplementing the JavaScript apply
+function in C++ in a module called calljs.
+
+Calling JS functions
+--------------------
+
+NOTE: I've ignored all type-checks for the sake of simplicity.
+
+We convert the first argument to a function. A function is called with the object that will be bound to it's 'this' and the number of parameters, followed by the parameters. The parameters should be a Handle<Value> array.
+
+.. code-block:: cpp
+    :include: calljs/main.cc
+    :start-at: Handle<Value>
+    :end-before: extern
+
+Simple objects
+--------------
+
+\
+\
+\
+
+.. code-block:: js
+
+    exports.Inventory = function() {
+        this.items = 257;
+    }
+
+    // later
+    var iv = new Inventory();
+    console.log(iv.items);
+
+This is the classic object oriented JS style
+
+Simple objects
+--------------
+
+.. code-block:: cpp
+    :include: simpleobject/main.cc
+    :start-at: static void Init
+    :end-before: NODE_MODULE
+
+.. code-block:: cpp
+    :include: simpleobject/main.cc
+    :start-at: Handle<Value>
+    :end-at: }
+
+Methods
+-------
+
+.. code-block:: js
+
+    Inventory.prototype.addStock = function(newStock) {
+        this.items += newStock;
+    }
+
+    Inventory.prototype.ship = function(orders) {
+        if (this.items < orders)
+            throw Exception("Not enough items");
+
+        this.items -= orders
+    }
+
+Methods
+-------
+
+Registering prototype methods
+
+.. code-block:: cpp
+    :include: methods/main.cc
+    :start-at: // operating
+    :end-at: GetFunction());
+
+Methods
+-------
+
+Accessing object properties
+
+.. code-block:: cpp
+    :include: methods/main.cc
+    :start-at: Handle<Value> AddStock
+    :end-at: }
+
+Methods
+-------
+
+Throwing an exception
+
+.. code-block:: cpp
+    :include: methods/main.cc
+    :start-at: Handle<Value> Ship
+    :end-at: }
+
+ObjectWrap
+----------
+
+* Associate native C++ objects with JS objects
+* Node specific class which manages GC
+
+TODO diagram of how the nesting happens of native object and v8 object
+and explain internal fields
+
+Going Async
+-----------
+
+Linking your library
+--------------------
+
+Linking external libs in Waf:
+
+.. code-block:: python
+
+    def configure(conf):
+      # ...
+      # uses pkg-config
+      conf.check_cfg(package='<pkg-config name>', args='--cflags --libs',
+      uselib_store='ALIAS')
+
+    def build(bld):
+      # ...
+      obj.uselib = 'ALIAS'
+
+Holder vs This
+--------------
+
+args.Holder() refers to the object it should've been called on
+so that prototype chains work.
+
+Strings to-and-fro
+------------------
+
+v8::String -> C string
+
+.. code-block:: cpp
+    :include: strings/main.cc
+    :start-after: v8;
+    :end-before: Handle<Value> Read
+
+Strings to-and-fro
+------------------
+
+C string -> v8::String
+
+.. code-block:: cpp
+    :include: strings/main.cc
+    :start-at: Handle<Value> Read
+    :end-at: }
+
+Things I haven't covered
+------------------------
+
+* Accessors
+    * Per property accessors
+    * Indexed accessors ( `object[5]` )
+    * Named property accessors ( `object.property` )
+* Function Signatures and HasInstance for type safety
+* Emitting events using new JS only EventEmitter
+* Details of libuv
+* Using V8 on its own
+
+End notes
+-----------
+
+Contact:
+
+* `@nikhilcutshort <https://twitter.com/nikhilcutshort>`_
+* nsm.nikhil@gmail.com
+
+\
+\
+\
+`Cover image <http://www.flickr.com/photos/32045022@N05/3006326562/>`_ by `Munjal Savla <http://www.flickr.com/people/32045022@N05/>`_ (*by-nc-sa*)
