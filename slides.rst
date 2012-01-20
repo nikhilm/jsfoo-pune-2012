@@ -173,21 +173,6 @@ Templates
 
     FunctionTemplate::PrototypeTemplate       square.prototype
 
-Calling JS functions
---------------------
-
-.. code-block:: js
-    :include: calljs/test.js
-
-Calling JS functions
---------------------
-
-.. code-block:: cpp
-    :include: calljs/main.cc
-    :start-at: Handle<Value>
-    :end-before: extern
-
-
 Simple objects
 --------------
 
@@ -405,3 +390,41 @@ Contact:
 \
 \
 `Cover image <http://www.flickr.com/photos/32045022@N05/3006326562/>`_ by `Munjal Savla <http://www.flickr.com/people/32045022@N05/>`_ (*by-nc-sa*)
+
+Extra material below
+---------------------
+
+Calling JS functions
+--------------------
+
+.. code-block:: js
+    :include: calljs/test.js
+
+Calling JS functions
+--------------------
+
+.. code-block:: cpp
+    :include: calljs/main.cc
+    :start-at: Handle<Value>
+    :end-before: extern
+
+
+Strings to-and-fro
+------------------
+
+v8::String -> C string
+
+.. code-block:: cpp
+    :include: strings/main.cc
+    :start-after: v8;
+    :end-before: Handle<Value> Read
+
+Strings to-and-fro
+------------------
+
+C string -> v8::String
+
+.. code-block:: cpp
+    :include: strings/main.cc
+    :start-at: Handle<Value> Read
+    :end-at: }
