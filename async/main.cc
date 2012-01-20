@@ -93,7 +93,8 @@ public:
         baton->callback = Persistent<Function>::New(cb);
         baton->wrapper = wrapper;
 
-        uv_queue_work(Loop(), &baton->request, ReshelveAsync, ReshelveAsyncAfter);
+        uv_queue_work(Loop(), &baton->request,
+                      ReshelveAsync, ReshelveAsyncAfter);
 
         return Undefined();
     }
@@ -101,16 +102,20 @@ public:
     static void ReshelveAsync(uv_work_t *req) {
         // This runs in a separate thread
         // NO V8 interaction should be done
-        ReshelveBaton *baton = static_cast<ReshelveBaton*>(req->data);
+        ReshelveBaton *baton =
+            static_cast<ReshelveBaton*>(req->data);
         // if you want to modify baton values
         // do synchronous work here
         baton->wrapper->inv->reshelve();
     }
 
     static void ReshelveAsyncAfter(uv_work_t *req) {
-        ReshelveBaton *baton = static_cast<ReshelveBaton*>(req->data);
+        ReshelveBaton *baton =
+            static_cast<ReshelveBaton*>(req->data);
+
         Handle<Value> argv[] = { Null() }; // no error
-        baton->callback->Call(Context::GetCurrent()->Global(), 1, argv);
+        baton->callback->Call(Context::GetCurrent()->Global(),
+                              1, argv);
 
         baton->callback.Dispose();
         delete baton;
