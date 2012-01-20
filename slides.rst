@@ -406,28 +406,14 @@ Linking external libs in Waf:
 Holder vs This
 --------------
 
-args.Holder() refers to the object it should've been called on
-so that prototype chains work.
+* `args.This()` is always the this object passed in to the function
 
-Strings to-and-fro
-------------------
+* `args.Holder()` runs up the prototype chain to the 'right' object
 
-v8::String -> C string
+* Signatures decide the 'right' object, automatically handled by
+  `NODE_PROTOTYPE_SET_METHOD`
 
-.. code-block:: cpp
-    :include: strings/main.cc
-    :start-after: v8;
-    :end-before: Handle<Value> Read
-
-Strings to-and-fro
-------------------
-
-C string -> v8::String
-
-.. code-block:: cpp
-    :include: strings/main.cc
-    :start-at: Handle<Value> Read
-    :end-at: }
+* **Always** use `Holder()` to be on the safe side
 
 Things I haven't covered
 ------------------------
