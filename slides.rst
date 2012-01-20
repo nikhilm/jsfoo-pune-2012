@@ -18,6 +18,15 @@ Introduction
 
 * node.js is a thin wrapper around V8 and evented I/O (*libuv*)
 
+Code
+----
+
+\
+\
+\
+
+    git clone git://github.com/nikhilm/jsfoo-pune-2012.git
+
 We want to
 ------------
 
@@ -299,6 +308,13 @@ Things I haven't covered
 * Emitting events using new JS only EventEmitter
 * Details of libuv
 * Using V8 on its own
+
+You might want to look at
+-------------------------
+
+* https://github.com/weaver/uuidjs
+* https://github.com/nikhilm/node-taglib
+* https://github.com/pietern/hiredis-node
 
 End notes
 -----------
