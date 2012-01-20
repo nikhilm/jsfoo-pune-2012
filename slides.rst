@@ -269,12 +269,61 @@ Throwing an exception
 ObjectWrap
 ----------
 
+* Associate native C++ objects with JS objects
+* Node specific class which manages garbage collection
+* Stored internally in fields
+
 TODO diagram of how the nesting happens of native object and v8 object
 and explain internal fields
-TODO: args.Holder() vs args.This()
-args.Holder() refers to the object it should've been called on
-so that prototype chains work. Dig into NODE_SET_PROTOTYPE_METHOD
-and explain Signatures
+
+ObjectWrap
+----------
+
+.. code-block:: cpp
+
+    // native C++ class
+    namespace Library {
+    class Inventory {
+        Inventory();
+        void addStock(int);
+        int ship(int);
+        int getItems();
+
+        int items; // private
+    };
+    }
+
+ObjectWrap
+----------
+
+Setting internal field count
+
+.. code-block:: cpp
+    :include: objectwrap/main.cc
+    :start-at: Handle<ObjectTemplate>
+    :end-at: Count(1);
+
+ObjectWrap
+----------
+
+Wrapping
+
+.. code-block:: cpp
+    :include: objectwrap/main.cc
+    :start-at: namespace binding
+    :end-at: }
+
+TODO: put diagram
+
+ObjectWrap
+----------
+
+Unwrapping
+
+.. code-block:: cpp
+    :include: objectwrap/main.cc
+    :start-at: static Handle<Value> Ship
+    :end-at: }
 
 Going Async
 -----------
