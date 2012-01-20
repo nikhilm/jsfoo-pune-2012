@@ -273,8 +273,11 @@ ObjectWrap
 * Node specific class which manages garbage collection
 * Stored internally in fields
 
-TODO diagram of how the nesting happens of native object and v8 object
-and explain internal fields
+\
+\
+
+.. image:: images/internal.png
+    :width: 12cm
 
 ObjectWrap
 ----------
