@@ -117,16 +117,6 @@ Injecting primitives
     :include: primitives/primitives.cc
 
 
-Templates
----------
-
-* Creation of functions and objects in C++
-
-.. note::
-
-    Explain how they differ, what each is for and
-    whats the deal with FunctionTemplate && FunctionTemplate::GetFunction
-
 Simple functions
 ----------------
 
@@ -170,25 +160,33 @@ Implementation:
 
 explain scope.Close
 
-Strings to-and-fro
-------------------
+Templates
+---------
 
-v8::String -> C string
+.. code-block:: JS
+
+    FunctionTemplate                          ???
+
+    FunctionTemplate::GetFunction             square [Function]
+
+    FunctionTemplate::InstanceTemplate        What `this` would be in 'new square()'
+
+    FunctionTemplate::PrototypeTemplate       square.prototype
+
+Calling JS functions
+--------------------
+
+.. code-block:: js
+    :include: calljs/test.js
+
+Calling JS functions
+--------------------
 
 .. code-block:: cpp
-    :include: strings/main.cc
-    :start-after: v8;
-    :end-before: Handle<Value> Read
+    :include: calljs/main.cc
+    :start-at: Handle<Value>
+    :end-before: extern
 
-Strings to-and-fro
-------------------
-
-C string -> v8::String
-
-.. code-block:: cpp
-    :include: strings/main.cc
-    :start-at: Handle<Value> Read
-    :end-at: }
 
 Simple objects
 --------------
@@ -214,13 +212,13 @@ Simple objects
 
 .. code-block:: cpp
     :include: simpleobject/main.cc
-    :start-at: Handle<Value>
-    :end-at: }
+    :start-at: static void Init
+    :end-before: NODE_MODULE
 
 .. code-block:: cpp
     :include: simpleobject/main.cc
-    :start-at: static void Init
-    :end-before: NODE_MODULE
+    :start-at: Handle<Value>
+    :end-at: }
 
 Methods
 -------
@@ -298,6 +296,32 @@ Linking external libs in Waf:
       # ...
       obj.uselib = 'ALIAS'
 
+Holder vs This
+--------------
+
+args.Holder() refers to the object it should've been called on
+so that prototype chains work.
+
+Strings to-and-fro
+------------------
+
+v8::String -> C string
+
+.. code-block:: cpp
+    :include: strings/main.cc
+    :start-after: v8;
+    :end-before: Handle<Value> Read
+
+Strings to-and-fro
+------------------
+
+C string -> v8::String
+
+.. code-block:: cpp
+    :include: strings/main.cc
+    :start-at: Handle<Value> Read
+    :end-at: }
+
 Things I haven't covered
 ------------------------
 
@@ -305,6 +329,7 @@ Things I haven't covered
     * Per property accessors
     * Indexed accessors ( `object[5]` )
     * Named property accessors ( `object.property` )
+* Function Signatures and HasInstance for type safety
 * Emitting events using new JS only EventEmitter
 * Details of libuv
 * Using V8 on its own
